@@ -3,198 +3,198 @@ This is my Project.
 I designed and programed this code using Arduino UNO. 
 this code is about a device which I designed it with my innovation
 
-  #include <Wire.h>
-  #include <LiquidCrystal_I2C.h> //für Display
-  #include <Keypad.h> //für Tastenfeld
-  #include <Adafruit_MotorShield.h> //für Motor
-  #include "utility/Adafruit_MS_PWMServoDriver.h" //für Motor
-  #include <AccelStepper.h> //für Motor
+    #include <Wire.h>
+    #include <LiquidCrystal_I2C.h> //für Display
+    #include <Keypad.h> //für Tastenfeld
+    #include <Adafruit_MotorShield.h> //für Motor
+    #include "utility/Adafruit_MS_PWMServoDriver.h" //für Motor
+    #include <AccelStepper.h> //für Motor
 
-  //Variabel:
-  char LaengeHunderter = '_';
-  char LaengeZehner = '_';
-  char LaengeEiner = '_';
-  float Faserdurchmesser = 0; // in mm
-  int   Faserlaenge = 0;
-  //boolean LaengeEingegeben = false;
-  int Klick = 7;    // Klick als akustisches Feedback
-  float MaxSpeed=200; // oberer Motor //float MaxSpeed=5000.0; // oberer Motor
-  float kleinSpuleBreit = 3; // in cm
-  //float GrossSpuleBreit= 9.1; // in cm
-  float SchraubenumdrehungenProCm = 10; // (z.B.)
-  float RadiusKleines = 4.3;  // in cm
-  float UmdrehungenProBreit = SchraubenumdrehungenProCm * kleinSpuleBreit; 
-  //Serial.print(" UmdrehungenProBreit: ");
-  //Serial.println(UmdrehungenProBreit);
-  long Stepper2StepsToGo;
-  // Umdrehungen des unteren Motors (z.B. 6.5) tedad dorhaye ke pich mizane 30 tast
+    //Variabel:
+    char LaengeHunderter = '_';
+    char LaengeZehner = '_';
+    char LaengeEiner = '_';
+    float Faserdurchmesser = 0; // in mm
+    int   Faserlaenge = 0;
+    //boolean LaengeEingegeben = false;
+        int Klick = 7;    // Klick als akustisches Feedback
+        float MaxSpeed=200; // oberer Motor //float MaxSpeed=5000.0; // oberer Motor
+        float kleinSpuleBreit = 3; // in cm
+        //float GrossSpuleBreit= 9.1; // in cm
+        float SchraubenumdrehungenProCm = 10; // (z.B.)
+        float RadiusKleines = 4.3;  // in cm
+        float UmdrehungenProBreit = SchraubenumdrehungenProCm * kleinSpuleBreit; 
+        //Serial.print(" UmdrehungenProBreit: ");
+        //Serial.println(UmdrehungenProBreit);
+        long Stepper2StepsToGo;
+        // Umdrehungen des unteren Motors (z.B. 6.5) tedad dorhaye ke pich mizane 30 tast
 
-  float Umfang = 2 * M_PI * RadiusKleines;    // in cm
-  bool active = false; // noch keine Bestellung
-  bool fertig = true;
+        float Umfang = 2 * M_PI * RadiusKleines;    // in cm
+        bool active = false; // noch keine Bestellung
+        bool fertig = true;
 
-  //LCD:
-  LiquidCrystal_I2C lcd(0x3F, 16, 2); // Setzt die LCD-Addresse auf 0x3F (oder 0x27) Display mit 16 Zeichen 2 Zeilen
+        //LCD:
+        LiquidCrystal_I2C lcd(0x3F, 16, 2); // Setzt die LCD-Addresse auf 0x3F (oder 0x27) Display mit 16 Zeichen 2 Zeilen
 
-  //Tastenfeld:
-  const byte ROWS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Zeilen
-  const byte COLS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Spalten
-  char keys[ROWS][COLS] = { //Die Ziffern/Zeichen des Tastenfelds
-    {'1', '2', '3', 'A'},
-    {'4', '5', '6', 'B'},
-    {'7', '8', '9', 'C'},
-    {'*', '0', '#', 'D'}
-  };
-  byte rowPins[ROWS] = {23, 25, 27, 29};  //Definition der Pins für die 4 Zeilen
-  byte colPins[COLS] = {31, 33, 35, 37};  //Definition der Pins für die 4 Spalten
-  char pressedKey;                        //pressedKey entspricht in Zukunft den gedrückten Tasten
-    Keypad myKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS ); //Das Keypad kann absofort mit myKeypad angesprochen werden
+        //Tastenfeld:
+        const byte ROWS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Zeilen
+        const byte COLS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Spalten
+        char keys[ROWS][COLS] = { //Die Ziffern/Zeichen des Tastenfelds
+          {'1', '2', '3', 'A'},
+          {'4', '5', '6', 'B'},
+          {'7', '8', '9', 'C'},
+          {'*', '0', '#', 'D'}
+        };
+        byte rowPins[ROWS] = {23, 25, 27, 29};  //Definition der Pins für die 4 Zeilen
+        byte colPins[COLS] = {31, 33, 35, 37};  //Definition der Pins für die 4 Spalten
+        char pressedKey;                        //pressedKey entspricht in Zukunft den gedrückten Tasten
+        Keypad myKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS ); //Das Keypad kann absofort mit myKeypad angesprochen werden
 
-  //MotorShield:
-  Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-  Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
-  Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
+            //MotorShield:
+            Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+            Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
+            Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
 
-  int SchritteProUmdrehung1 =100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
-  void forwardstep1() {
-    Stepper1->onestep(FORWARD,DOUBLE);
-  }
-  void backwardstep1() {
-    Stepper1->onestep(BACKWARD,DOUBLE);
-  }
+            int SchritteProUmdrehung1 =100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
+            void forwardstep1() {
+              Stepper1->onestep(FORWARD,DOUBLE);
+            }
+            void backwardstep1() {
+              Stepper1->onestep(BACKWARD,DOUBLE);
+            }
 
-  // wrappers for the second motor!
-  int SchritteProUmdrehung2 = 100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
-  void forwardstep2() {
-    Stepper2->onestep(FORWARD,DOUBLE);
-  }
-  void backwardstep2() {
-    Stepper2->onestep(BACKWARD,DOUBLE);
-  }
+            // wrappers for the second motor!
+            int SchritteProUmdrehung2 = 100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
+            void forwardstep2() {
+              Stepper2->onestep(FORWARD,DOUBLE);
+            }
+            void backwardstep2() {
+              Stepper2->onestep(BACKWARD,DOUBLE);
+       }
 
-  AccelStepper stepper1(forwardstep1, backwardstep1);
-  AccelStepper stepper2(forwardstep2, backwardstep2);
+      AccelStepper stepper1(forwardstep1, backwardstep1);
+      AccelStepper stepper2(forwardstep2, backwardstep2);
 
 
-  // Durchmesserfaser in cm
-  void bestellung(float meter,float Durchmesserfaser)
-  {
- 
-  int    WindungenProBreit= kleinSpuleBreit/Durchmesserfaser; // z.B. 52 (Umdrehungen des oberen Motors)/ 2.Motor 
-  Serial.print("WindungenProBreit:  ");
-  Serial.println (WindungenProBreit);
+      // Durchmesserfaser in cm
+      void bestellung(float meter,float Durchmesserfaser)
+      {
+
+      int    WindungenProBreit= kleinSpuleBreit/Durchmesserfaser; // z.B. 52 (Umdrehungen des oberen Motors)/ 2.Motor 
+      Serial.print("WindungenProBreit:  ");
+      Serial.println (WindungenProBreit);
+
+      float  Ratio= (WindungenProBreit/UmdrehungenProBreit); // Oberer Motor muss sich um diesen Faktor schneller drehen (z.B. 8)
+      Serial.print("Ratio:  ");
+      Serial.println(Ratio);
   
-  float  Ratio= (WindungenProBreit/UmdrehungenProBreit); // Oberer Motor muss sich um diesen Faktor schneller drehen (z.B. 8)
-  Serial.print("Ratio:  ");
-  Serial.println(Ratio);
-  
-  // Entweder: quadratische Gleichung lösen:
-  // meter = 2*pi*WindungenProBreit*(N*Radiuskleines+Durchmesserfaser*N*(N+1)/2)/100
-  // oder:
-  long umdrehungen = 0; // N
-  float radius = RadiusKleines;
-  while (1) {
-    float umfang = 2 * M_PI * radius;
-    float laengeProSchicht = umfang * WindungenProBreit / 100; // in metern
-    if (meter < laengeProSchicht)
-    {
-      umdrehungen += ((meter * 100) / umfang);
-      break;
-    }
-    umdrehungen += WindungenProBreit;
-//    Serial.print("umdrehungen: "  );
-//    Serial.println(umdrehungen);
+      // Entweder: quadratische Gleichung lösen:
+      // meter = 2*pi*WindungenProBreit*(N*Radiuskleines+Durchmesserfaser*N*(N+1)/2)/100
+      // oder:
+      long umdrehungen = 0; // N
+      float radius = RadiusKleines;
+      while (1) {
+        float umfang = 2 * M_PI * radius;
+        float laengeProSchicht = umfang * WindungenProBreit / 100; // in metern
+        if (meter < laengeProSchicht)
+        {
+          umdrehungen += ((meter * 100) / umfang);
+          break;
+        }
+        umdrehungen += WindungenProBreit;
+    //    Serial.print("umdrehungen: "  );
+    //    Serial.println(umdrehungen);
   
     radius += Durchmesserfaser; // oder etwas weniger
     meter -= laengeProSchicht;
-  }
-  // oder vereinfacht:
-//   long  umdrehungen = ((meter * 100) / Umfang)+1 ; // in  Umdrehungen (des oberen Motors)Umrechnung
-//   Serial.print ("umdrehungen: "  );
-//   Serial.println (umdrehungen);
+      }
+      // oder vereinfacht:
+    //   long  umdrehungen = ((meter * 100) / Umfang)+1 ; // in  Umdrehungen (des oberen Motors)Umrechnung
+    //   Serial.print ("umdrehungen: "  );
+    //   Serial.println (umdrehungen);
 
-  AFMS.begin();  // create with the default frequency 1.6KHz
-  stepper1.setMaxSpeed(MaxSpeed/Ratio);
-  Serial.print(" MaxSpeed/Ratio Stepper1 am Schreibe: ");
-  Serial.println(MaxSpeed/Ratio);
-  
-  stepper1.setAcceleration(100.0);                              // oder 10 oder 1000 ?
-  int steps1 = SchritteProUmdrehung1*UmdrehungenProBreit;       //umdrehungen; 
-  stepper1.setCurrentPosition(-steps1/2);                         // -steps1/2 ?
-  stepper1.moveTo(steps1/2);                                      // steps1/2 ?
+    AFMS.begin();  // create with the default frequency 1.6KHz
+    stepper1.setMaxSpeed(MaxSpeed/Ratio);
+    Serial.print(" MaxSpeed/Ratio Stepper1 am Schreibe: ");
+    Serial.println(MaxSpeed/Ratio);
 
-  Serial.print("steps1: ");
-  Serial.println(steps1/2);
+    stepper1.setAcceleration(100.0);                              // oder 10 oder 1000 ?
+    int steps1 = SchritteProUmdrehung1*UmdrehungenProBreit;       //umdrehungen; 
+    stepper1.setCurrentPosition(-steps1/2);                         // -steps1/2 ?
+    stepper1.moveTo(steps1/2);                                      // steps1/2 ?
 
-  stepper2.setMaxSpeed(MaxSpeed);
-  Serial.print("MaxSpeed Stepper2 an der Spule**:  ");
-  Serial.println(MaxSpeed);
+    Serial.print("steps1: ");
+    Serial.println(steps1/2);
 
-  stepper2.setAcceleration(100.0);
+    stepper2.setMaxSpeed(MaxSpeed);
+    Serial.print("MaxSpeed Stepper2 an der Spule**:  ");
+    Serial.println(MaxSpeed);
 
-  Serial.print("SchritteProUmdrehung2:  "  );
-  Serial.println(SchritteProUmdrehung2);
+    stepper2.setAcceleration(100.0);
 
-  Stepper2StepsToGo = (long) (SchritteProUmdrehung2 * umdrehungen);
-  stepper2.moveTo (Stepper2StepsToGo);                    //(SchritteProUmdrehung2 * umdrehungen);
-  
-  Serial.print("umdrehungen: ");
-  Serial.println(umdrehungen);
-  
-  Serial.print("SchritteProUmdrehung2 * umdrehungen: ");
-  Serial.println( SchritteProUmdrehung2 * umdrehungen);
+    Serial.print("SchritteProUmdrehung2:  "  );
+    Serial.println(SchritteProUmdrehung2);
 
-  //stepper2.moveTo(SchritteProUmdrechung2*Umrechnung);
+    Stepper2StepsToGo = (long) (SchritteProUmdrehung2 * umdrehungen);
+    stepper2.moveTo (Stepper2StepsToGo);                    //(SchritteProUmdrehung2 * umdrehungen);
 
-  active = true;
-  fertig = false;
- }
+    Serial.print("umdrehungen: ");
+    Serial.println(umdrehungen);
 
- void setup()
- {
-  Serial.begin(9600);
-  pinMode(Klick, OUTPUT); // Pin 2 (Pin „Pieps“) ist ein Ausgang.
-  lcd.begin(); // Initialisierung der LCD
+    Serial.print("SchritteProUmdrehung2 * umdrehungen: ");
+    Serial.println( SchritteProUmdrehung2 * umdrehungen);
 
-  lcd.setCursor(0, 0);
-  lcd.print("  fionec GmbH");
-  lcd.setCursor(0, 1);
-  lcd.print(" www.fionec.de");
-  delay(5000);
+    //stepper2.moveTo(SchritteProUmdrechung2*Umrechnung);
 
-  lcd.setCursor(0, 0);
-  lcd.print("Durchm.:A=0.25mm");
-  lcd.setCursor(0, 1);
-  lcd.print("        B=0.17mm");
-  Faserdurchmesser=0;
-  LaengeHunderter = '_';
-  LaengeZehner = '_';
-  LaengeEiner = '_';
+    active = true;
+    fertig = false;
+   }
 
-  // auf bestellung warten
-  active = false;
-  fertig = true;
-}
+     void setup()
+     {
+      Serial.begin(9600);
+      pinMode(Klick, OUTPUT); // Pin 2 (Pin „Pieps“) ist ein Ausgang.
+      lcd.begin(); // Initialisierung der LCD
 
-void loopEingabe()
-{
-  pressedKey = myKeypad.getKey();
-  if   (!pressedKey) {
-    return;
-  }
+      lcd.setCursor(0, 0);
+      lcd.print("  fionec GmbH");
+      lcd.setCursor(0, 1);
+      lcd.print(" www.fionec.de");
+      delay(5000);
 
-  digitalWrite(Klick, HIGH);
-  delay(25);
-  digitalWrite(Klick, LOW);
-  
-  
-  if (Faserdurchmesser != 0)
-  {
-    if (LaengeHunderter == '_') //Hundertereingabe
+    lcd.setCursor(0, 0);
+    lcd.print("Durchm.:A=0.25mm");
+    lcd.setCursor(0, 1);
+    lcd.print("        B=0.17mm");
+    Faserdurchmesser=0;
+    LaengeHunderter = '_';
+    LaengeZehner = '_';
+    LaengeEiner = '_';
+
+    // auf bestellung warten
+    active = false;
+    fertig = true;
+    }
+
+    void loopEingabe()
     {
-      LaengeHunderter = pressedKey;
-      lcd.setCursor(8, 0);
-      lcd.print(LaengeHunderter);
+      pressedKey = myKeypad.getKey();
+      if   (!pressedKey) {
+        return;
+      }
+
+      digitalWrite(Klick, HIGH);
+      delay(25);
+      digitalWrite(Klick, LOW);
+  
+  
+    if (Faserdurchmesser != 0)
+    {
+      if (LaengeHunderter == '_') //Hundertereingabe
+      {
+        LaengeHunderter = pressedKey;
+        lcd.setCursor(8, 0);
+        lcd.print(LaengeHunderter);
 
      // Serial.println("Hunderter gedrückt");
     }
@@ -245,31 +245,31 @@ void loopEingabe()
         }
       }
     }
-  }
-  if (Faserdurchmesser == 0)
-  {
-    if (pressedKey == 'A')
+    }
+    if (Faserdurchmesser == 0)
     {
-      Faserdurchmesser = 0.25;
-      Serial.println("A gedrückt->Faserdurchmesser=0,25mm");
-      Serial.println(Faserdurchmesser);
-      lcd.setCursor(0, 0);
-      lcd.print("Durchmesser:    ");
-      lcd.setCursor(0, 1);
-      lcd.print("0,25mm(standard)");
-      delay(3000);
-      lcd.setCursor(0, 0);
-      lcd.print("Laenge: ");
-      lcd.setCursor(8, 0);
-      lcd.print(LaengeHunderter);
-      lcd.setCursor(9, 0);
-      lcd.print(LaengeZehner);
-      lcd.setCursor(10, 0);
-      lcd.print(LaengeEiner);
-      lcd.setCursor(11, 0);
-      lcd.print("Meter");
-      lcd.setCursor(0, 1);
-      lcd.print("Laenge eingeben!");
+      if (pressedKey == 'A')
+          {
+          Faserdurchmesser = 0.25;
+          Serial.println("A gedrückt->Faserdurchmesser=0,25mm");
+          Serial.println(Faserdurchmesser);
+          lcd.setCursor(0, 0);
+          lcd.print("Durchmesser:    ");
+          lcd.setCursor(0, 1);
+          lcd.print("0,25mm(standard)");
+          delay(3000);
+          lcd.setCursor(0, 0);
+          lcd.print("Laenge: ");
+          lcd.setCursor(8, 0);
+          lcd.print(LaengeHunderter);
+          lcd.setCursor(9, 0);
+          lcd.print(LaengeZehner);
+          lcd.setCursor(10, 0);
+          lcd.print(LaengeEiner);
+          lcd.setCursor(11, 0);
+          lcd.print("Meter");
+          lcd.setCursor(0, 1);
+          lcd.print("Laenge eingeben!");
     
     }
      
@@ -295,20 +295,20 @@ void loopEingabe()
       lcd.setCursor(0, 1);
       lcd.print("Laenge eingeben!");
     }
-  }
-}
-void loopMotors()
-{
-  // Richtung wechseln
-  if ( (stepper1.distanceToGo() == 0) && (active) ){
-    stepper1.moveTo(-stepper1.currentPosition());
-  }
-  if (stepper2.distanceToGo() == 0) {
-    // anhalten und reset
-    if (active) {
-      active = false; // fährt aber noch bis zum Ende bzw. Anfang
-      stepper1.moveTo(-abs(stepper1.targetPosition())); // an den Anfang fahren (nicht ans Ende)
- 
+      }
+    }
+    void loopMotors()
+    {
+      // Richtung wechseln
+      if ( (stepper1.distanceToGo() == 0) && (active) ){
+        stepper1.moveTo(-stepper1.currentPosition());
+      }
+      if (stepper2.distanceToGo() == 0) {
+        // anhalten und reset
+        if (active) {
+          active = false; // fährt aber noch bis zum Ende bzw. Anfang
+          stepper1.moveTo(-abs(stepper1.targetPosition())); // an den Anfang fahren (nicht ans Ende)
+
       stepper1.setMaxSpeed(MaxSpeed);  
       
       Serial.print("sorate bargasht motor1: ");
@@ -325,18 +325,18 @@ void loopMotors()
       Stepper2->release();
       setup(); // neu anfangen
     }
-  }
-  stepper1.run();
-  stepper2.run();
-}
-void loop()
-{
-  if (fertig) {
-    loopEingabe();
-  } else {
-    loopMotors();
-  }
-}
+      }
+      stepper1.run();
+      stepper2.run();
+    }
+    void loop()
+    {
+      if (fertig) {
+        loopEingabe();
+      } else {
+        loopMotors();
+      }
+    }
 
 
 
