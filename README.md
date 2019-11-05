@@ -159,7 +159,7 @@ this code is about a device which I designed it with my innovation
       lcd.setCursor(0, 0);
       lcd.print("  fionec GmbH");
       lcd.setCursor(0, 1);
-      lcd.print(" www.fionec.de");
+      lcd.print(" company name");
       delay(5000);
 
     lcd.setCursor(0, 0);
