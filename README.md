@@ -3,82 +3,82 @@ This is my Project.
 I designed and programed this code using Arduino UNO. 
 this code is about a device which I designed it with my innovation
 
-#include <Wire.h>
-#include <LiquidCrystal_I2C.h> //für Display
-#include <Keypad.h> //für Tastenfeld
-#include <Adafruit_MotorShield.h> //für Motor
-#include "utility/Adafruit_MS_PWMServoDriver.h" //für Motor
-#include <AccelStepper.h> //für Motor
+  #include <Wire.h>
+  #include <LiquidCrystal_I2C.h> //für Display
+  #include <Keypad.h> //für Tastenfeld
+  #include <Adafruit_MotorShield.h> //für Motor
+  #include "utility/Adafruit_MS_PWMServoDriver.h" //für Motor
+  #include <AccelStepper.h> //für Motor
 
-//Variabel:
-char LaengeHunderter = '_';
-char LaengeZehner = '_';
-char LaengeEiner = '_';
-float Faserdurchmesser = 0; // in mm
-int   Faserlaenge = 0;
-//boolean LaengeEingegeben = false;
-int Klick = 7;    // Klick als akustisches Feedback
-float MaxSpeed=200; // oberer Motor //float MaxSpeed=5000.0; // oberer Motor
-float kleinSpuleBreit = 3; // in cm
-//float GrossSpuleBreit= 9.1; // in cm
-float SchraubenumdrehungenProCm = 10; // (z.B.)
-float RadiusKleines = 4.3;  // in cm
-float UmdrehungenProBreit = SchraubenumdrehungenProCm * kleinSpuleBreit; 
-//Serial.print(" UmdrehungenProBreit: ");
-//Serial.println(UmdrehungenProBreit);
-long Stepper2StepsToGo;
-// Umdrehungen des unteren Motors (z.B. 6.5) tedad dorhaye ke pich mizane 30 tast
+  //Variabel:
+  char LaengeHunderter = '_';
+  char LaengeZehner = '_';
+  char LaengeEiner = '_';
+  float Faserdurchmesser = 0; // in mm
+  int   Faserlaenge = 0;
+  //boolean LaengeEingegeben = false;
+  int Klick = 7;    // Klick als akustisches Feedback
+  float MaxSpeed=200; // oberer Motor //float MaxSpeed=5000.0; // oberer Motor
+  float kleinSpuleBreit = 3; // in cm
+  //float GrossSpuleBreit= 9.1; // in cm
+  float SchraubenumdrehungenProCm = 10; // (z.B.)
+  float RadiusKleines = 4.3;  // in cm
+  float UmdrehungenProBreit = SchraubenumdrehungenProCm * kleinSpuleBreit; 
+  //Serial.print(" UmdrehungenProBreit: ");
+  //Serial.println(UmdrehungenProBreit);
+  long Stepper2StepsToGo;
+  // Umdrehungen des unteren Motors (z.B. 6.5) tedad dorhaye ke pich mizane 30 tast
 
-float Umfang = 2 * M_PI * RadiusKleines;    // in cm
-bool active = false; // noch keine Bestellung
-bool fertig = true;
+  float Umfang = 2 * M_PI * RadiusKleines;    // in cm
+  bool active = false; // noch keine Bestellung
+  bool fertig = true;
 
-//LCD:
-LiquidCrystal_I2C lcd(0x3F, 16, 2); // Setzt die LCD-Addresse auf 0x3F (oder 0x27) Display mit 16 Zeichen 2 Zeilen
+  //LCD:
+  LiquidCrystal_I2C lcd(0x3F, 16, 2); // Setzt die LCD-Addresse auf 0x3F (oder 0x27) Display mit 16 Zeichen 2 Zeilen
 
-//Tastenfeld:
-const byte ROWS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Zeilen
-const byte COLS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Spalten
-char keys[ROWS][COLS] = { //Die Ziffern/Zeichen des Tastenfelds
-  {'1', '2', '3', 'A'},
-  {'4', '5', '6', 'B'},
-  {'7', '8', '9', 'C'},
-  {'*', '0', '#', 'D'}
-};
-byte rowPins[ROWS] = {23, 25, 27, 29};  //Definition der Pins für die 4 Zeilen
-byte colPins[COLS] = {31, 33, 35, 37};  //Definition der Pins für die 4 Spalten
-char pressedKey;                        //pressedKey entspricht in Zukunft den gedrückten Tasten
-Keypad myKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS ); //Das Keypad kann absofort mit myKeypad angesprochen werden
+  //Tastenfeld:
+  const byte ROWS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Zeilen
+  const byte COLS = 4; //Hier wird die Größe des Tastenfelds definiert 4 Spalten
+  char keys[ROWS][COLS] = { //Die Ziffern/Zeichen des Tastenfelds
+    {'1', '2', '3', 'A'},
+    {'4', '5', '6', 'B'},
+    {'7', '8', '9', 'C'},
+    {'*', '0', '#', 'D'}
+  };
+  byte rowPins[ROWS] = {23, 25, 27, 29};  //Definition der Pins für die 4 Zeilen
+  byte colPins[COLS] = {31, 33, 35, 37};  //Definition der Pins für die 4 Spalten
+  char pressedKey;                        //pressedKey entspricht in Zukunft den gedrückten Tasten
+    Keypad myKeypad = Keypad( makeKeymap(keys), rowPins, colPins, ROWS, COLS ); //Das Keypad kann absofort mit myKeypad angesprochen werden
 
-//MotorShield:
-Adafruit_MotorShield AFMS = Adafruit_MotorShield();
-Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
-Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
+  //MotorShield:
+  Adafruit_MotorShield AFMS = Adafruit_MotorShield();
+  Adafruit_StepperMotor *Stepper1 = AFMS.getStepper(200, 1);
+  Adafruit_StepperMotor *Stepper2 = AFMS.getStepper(200, 2);
 
-int SchritteProUmdrehung1 =100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
-void forwardstep1() {
-  Stepper1->onestep(FORWARD,DOUBLE);
-}
-void backwardstep1() {
-  Stepper1->onestep(BACKWARD,DOUBLE);
-}
+  int SchritteProUmdrehung1 =100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
+  void forwardstep1() {
+    Stepper1->onestep(FORWARD,DOUBLE);
+  }
+  void backwardstep1() {
+    Stepper1->onestep(BACKWARD,DOUBLE);
+  }
 
-// wrappers for the second motor!
-int SchritteProUmdrehung2 = 100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
-void forwardstep2() {
-  Stepper2->onestep(FORWARD,DOUBLE);
-}
-void backwardstep2() {
-  Stepper2->onestep(BACKWARD,DOUBLE);
-}
+  // wrappers for the second motor!
+  int SchritteProUmdrehung2 = 100;  // 100 bei DOUBLE, 200 bei SINGLE, 3200 bei MICROSTEP ...
+  void forwardstep2() {
+    Stepper2->onestep(FORWARD,DOUBLE);
+  }
+  void backwardstep2() {
+    Stepper2->onestep(BACKWARD,DOUBLE);
+  }
 
-AccelStepper stepper1(forwardstep1, backwardstep1);
-AccelStepper stepper2(forwardstep2, backwardstep2);
+  AccelStepper stepper1(forwardstep1, backwardstep1);
+  AccelStepper stepper2(forwardstep2, backwardstep2);
 
 
-// Durchmesserfaser in cm
-void bestellung(float meter,float Durchmesserfaser)
-{
+  // Durchmesserfaser in cm
+  void bestellung(float meter,float Durchmesserfaser)
+  {
  
   int    WindungenProBreit= kleinSpuleBreit/Durchmesserfaser; // z.B. 52 (Umdrehungen des oberen Motors)/ 2.Motor 
   Serial.print("WindungenProBreit:  ");
@@ -148,10 +148,10 @@ void bestellung(float meter,float Durchmesserfaser)
 
   active = true;
   fertig = false;
-}
+ }
 
-void setup()
-{
+ void setup()
+ {
   Serial.begin(9600);
   pinMode(Klick, OUTPUT); // Pin 2 (Pin „Pieps“) ist ein Ausgang.
   lcd.begin(); // Initialisierung der LCD
