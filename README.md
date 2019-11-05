@@ -1,6 +1,5 @@
 # Project
-This is my Project.
-I designed and programed this code using Arduino UNO. 
+I programed this code using Arduino UNO. 
 this code is about a device which I designed it with my innovation
 
     #include <Wire.h>
